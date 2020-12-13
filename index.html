@@ -88,7 +88,7 @@
             c.style.backgroundColor = "blue";
             c.onmouseover = function() {mouseover(this)};
             c.onmouseout = function() {mouseout(this)};
-            c.onclick = function(e) {click(e, this)};
+            c.onclick = function() {click(this)};
             id++;
             div.appendChild(c);
           }
@@ -116,7 +116,7 @@
         item.style.borderColor = "white";
       }
       
-      function click(e, item) {
+      function click(item) {
         if (isFirst()) {
           item.style.backgroundColor = "white";
           return;
