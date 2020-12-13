@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 35px;
+        border: 10px solid white;
+        position: absolute;
+        z-index: 0;
+      }
+      .background {
+        background: lightgreen;
+        width: 750px;
+        height: 700px;
+      }
+      .win {
+        color: red;
+        font-size: 180px;
+        position: absolute;
+        background-color: transparent;
+        z-index: 1;
+        top: 200px;
+        left: 50px;
+        font-family: fantasy;
+      }
+      .restart {
+        color: red;
+        font-size: 50px;
+        position: absolute;
+        background-color: lightblue;
+        border: 2px solid white;
+        border-radius: 5px;
+        border-color: green;
+        z-index: 1;
+        top: 550px;
+        left: 290px;
+        font-family: fantasy;
+        padding: 10px;
+        padding-bottom: 0px;
+      }
+      .notes {
+        width: 700px;
+    		border: 20px solid transparent;
+    		font-size: 20px;
+      }
+    </style>
+    <script type="text/javascript">
+      
+      var neighbors = new Map([
+        ['circle 0', new Map([['circle 3', 'circle 1'], ['circle 5', 'circle 2']])],
+        ['circle 1', new Map([['circle 6', 'circle 3'], ['circle 8', 'circle 4']])],
+        ['circle 2', new Map([['circle 7', 'circle 4'], ['circle 9', 'circle 5']])],
+        ['circle 3', new Map([['circle 0', 'circle 1'], ['circle 5', 'circle 4'], ['circle 10', 'circle 6'], ['circle 12', 'circle 7']])],
+        ['circle 4', new Map([['circle 11', 'circle 7'], ['circle 13', 'circle 8']])],
+        ['circle 5', new Map([['circle 0', 'circle 2'], ['circle 3', 'circle 4'], ['circle 12', 'circle 8'], ['circle 14', 'circle 9']])],
+        ['circle 6', new Map([['circle 1', 'circle 3'], ['circle 8', 'circle 7']])],
+        ['circle 7', new Map([['circle 2', 'circle 4'], ['circle 9', 'circle 8']])],
+        ['circle 8', new Map([['circle 1', 'circle 4'], ['circle 6', 'circle 7']])],
+        ['circle 9', new Map([['circle 2', 'circle 5'], ['circle 7', 'circle 8']])],
+        ['circle 10', new Map([['circle 3', 'circle 6'], ['circle 12', 'circle 11']])],
+        ['circle 11', new Map([['circle 4', 'circle 7'], ['circle 13', 'circle 12']])],
+        ['circle 12', new Map([['circle 3', 'circle 7'], ['circle 5', 'circle 8'], ['circle 10', 'circle 11'], ['circle 14', 'circle 13']])],
+        ['circle 13', new Map([['circle 4', 'circle 8'], ['circle 11', 'circle 12']])],
+        ['circle 14', new Map([['circle 5', 'circle 9'], ['circle 12', 'circle 13']])]
+      ]);
+      var clicked;
+      var leftStone;
+    
+      function init() {
+        body = document.getElementsByTagName('body')[0];
+        body.innerHTML = '';
+        leftStone = 15;
+        clicked = "none";
+        
+        let div = document.createElement('div');
+        div.id = "background";
+        div.setAttribute("class", "background");
+        let id = 0;
+        for (let i = 0; i < 5; i++) {
+          for (let j = 0; j <= i; j++) {
+            let c = document.createElement('div');
+            c.id = "circle " + id;
+            c.setAttribute("class", "circle");
+            c.style.left = 100 * j + 350 - 50 * i + "px";
+            c.style.top = 87 * (i + 1) + "px";
+            c.style.backgroundColor = "blue";
+            c.onmouseover = function() {mouseover(this)};
+            c.onmouseout = function() {mouseout(this)};
+            c.onclick = function(e) {click(e, this)};
+            id++;
+            div.appendChild(c);
+          }
+        }
+        body.appendChild(div);
+        
+        let notes = document.createElement('div');
+        notes.setAttribute("class", "notes");
+        notes.innerHTML = "Remove any one stone to start. Stones can move only by \"jumping\" over one of its neighbors, and then the neighbor will be removed. Leave one stone there to win the game!";
+        body.appendChild(notes);
+        
+        let restartButton = document.createElement('div');
+        restartButton.id = "restart";
+        restartButton.setAttribute("class", "restart");
+        restartButton.innerHTML = "Restart";
+        restartButton.onclick = function(){init()};
+        div.appendChild(restartButton);
+      }
+    
+      function mouseover(item) {
+        item.style.borderColor = "black";
+      }
+      
+      function mouseout(item) {
+        item.style.borderColor = "white";
+      }
+      
+      function click(e, item) {
+        if (isFirst()) {
+          item.style.backgroundColor = "white";
+          return;
+        }
+        
+        if (item.style.backgroundColor == "red") {          
+        	item.style.backgroundColor = "blue";
+          clicked = "none";
+        } else if (item.style.backgroundColor == "blue") {
+          item.style.backgroundColor = "red";
+          if(clicked != "none") {
+            document.getElementById(clicked).style.backgroundColor = "blue";
+          }
+          clicked = item.id;
+        } else if (item.style.backgroundColor == "white") {
+          jump(item);
+        }
+        if (leftStone == 1) {
+          showWinMessage();
+        }
+      }
+      
+      function isFirst() {
+        if (leftStone == 15) {
+          leftStone--;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      
+      function jump(item) {
+        if(clicked == "none" || !neighbors.get(item.id).has(clicked)) {
+          return;
+        }
+        let bridge = document.getElementById(neighbors.get(item.id).get(clicked));
+        if (bridge.style.backgroundColor == 'white') {
+          return;
+        }
+        bridge.style.backgroundColor = "white";
+        document.getElementById(clicked).style.backgroundColor = "white";
+        item.style.backgroundColor = "blue";
+        clicked = "none";
+        leftStone--;
+      }
+      
+      function showWinMessage() {
+        let winMessage = document.createElement('div');
+        winMessage.id = "win";
+        winMessage.setAttribute("class", "win");
+        winMessage.innerHTML = "You Win!";
+        document.getElementById("background").appendChild(winMessage);
+        circles = document.getElementsByClassName("circle");
+        for(let i = 0; i < circles.length; i++) {
+          circles[i].style.pointerEvents = 'none';
+        }
+      }
+      
+    </script>
+  </head>
+  
+  <body onload="init();">
+  </body>
+</html>
+
